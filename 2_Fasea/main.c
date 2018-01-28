@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+
 #include "includes/Barometro_irakurketa.h"
 #include "includes/Termometro_irakurketa.h"
 
@@ -113,4 +114,27 @@ void Emaitzak_erakutsi(struct balioak_barometro * emaitzak)
         }
     }
 }
+
+
+void Emaitzak_bidali(struct balioak_barometro * emaitzak)
+{
+    for(int i=0;i<SENTSOREKOP;i++)
+    {
+        if(SentsoreenMota[i]==TEMP)
+        {
+            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
+        }
+        else if(SentsoreenMota[i]==BAR)
+        {
+            printf("Presioa: %0.2f Paskal\n",emaitzak[i].presioa);
+            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
+        }
+        else
+        {
+            printf("%i -garren setsoreren izaera definitu gabe dago\n",i);
+        }
+    }
+}
+
+
 

@@ -114,3 +114,9 @@ void Emaitzak_erakutsi(struct balioak_barometro * emaitzak)
     }
 }
 
+void Emaitzak_Bidali(struct balioak_barometro * emaitzak)
+{
+
+
+
+}
