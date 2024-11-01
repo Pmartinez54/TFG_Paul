@@ -13,11 +13,37 @@ static const char PRESIO_FITX[]="/sys/class/i2c-dev/i2c-1/device/1-0060/iio\:dev
 static const float presio_eskala = 0.000250;
 
 
+float Temp_irakurketa();
+void probak();
+
+
+
+
+void main(){
+
+	probak();
+}
+
+void probak()
+{
+	int i=0;
+	printf("xd\n");
+	float denb = 0.00;
+	while(i<1000){
+		clock_t t= clock();
+		Temp_irakurketa();	
+		denb=denb + ((clock()-t)/CLOCKS_PER_SEC);
+		i++;
+	}	
+	denb = denb / 1000.0;
+	printf("Batazbesteko exekuzio denbora = %f",denb );
+
+}
 
 float Temp_irakurketa(){
-
-float tenperatura=0.0;
-char buf[10];
+	
+	float tenperatura=0.0;
+	char buf[10];
 	FILE *fitx = fopen(TEMP_FITX,"r");
 //	if(fitx== NULL)	
 	fgets(buf,sizeof(buf),fitx);
@@ -25,21 +51,6 @@ char buf[10];
 //        printf("Temp = %2.6f \n", tenperatura);
 	fclose(fitx);
 	return tenperatura;
-}
-
-void main()
-{
-	int i=0;
-	printf("xd\n");
-	float denb=0.00;
-	while(i<1000){
-		clock_t t= clock();
-		Temp_irakurketa();	
-		denb+= (clock()-t)/CLOCKS_PER_SEC;
-		i++;
-	}	
-	printf("Batazbesteko exekuzio denbora = %2.6f", (denb/1000));
-
 }
 
 
