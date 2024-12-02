@@ -1,57 +1,54 @@
-#include <time.h>
-#include <math.h>
+#include <fcntl.h>
 #include <stdio.h>
+#include <i2c/smbus.h>
+#include <linux/i2c-dev.h>
 #include <stdlib.h>
-
-//Barometroak bueltatzen duen temperatura balioa gordetzen duen fitxategiaren helbidea.
-static const char TEMP_FITX[]="/sys/class/i2c-dev/i2c-1/device/1-0060/iio\:device0/in_temp_raw";
-//Barometroren  temperatura balioa gradu zentigradutan itzultzeko beharrezko biderkatzailea.
-static const float temp_eskala = 0.062500;
-//Barometroak bueltatzen duen presioaren balioa gordetzen duen fitxategiaren helbidea.
-static const char PRESIO_FITX[]="/sys/class/i2c-dev/i2c-1/device/1-0060/iio\:device0/in_presssure_raw";
-//Barometroren  temperatura balioa gradu zentigradutan
-static const float presio_eskala = 0.000250;
-
-
-float Temp_irakurketa();
-void probak();
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include "MPL3115A2.h"
 
 
 
 
-void main(){
-
-	probak();
-}
-
-void probak()
+void Irakurketa_Barometrikoa(int fitx, float *emaitzak)    
 {
-	int i=0;
-	printf("xd\n");
-	float denb = 0.00;
-	while(i<1000){
-		clock_t t= clock();
-		Temp_irakurketa();	
-		denb=denb + ((clock()-t)/CLOCKS_PER_SEC);
-		i++;
-	}	
-	denb = denb / 1000.0;
-	printf("Batazbesteko exekuzio denbora = %f",denb );
+    emaitzak[0] = MPL3115A2_ReadPressure(fitx);
+    emaitzak[1] = MPL3115A2_ReadTemperature(fitx);
+}
+
+void Sentsorea_Hasieratu(int fitx)
+{
+    MPL3115A2_Hasieratu_Polling(fitx);
+    MPL3115A2_BarometerMode(fitx);
+    sleep(1);    
+}
+
+int Senstorea_Aatzitu()
+{
+	int fitx;
+	char filename[] = "/dev/i2c-1"; // i2c-1 motatako dispositiboen busen helbideak
+	fitx = open(filename, O_RDWR);
+  	if (fitx < 0) {
+    		printf("%s bus-a irekitzean arazoa, errzenb = %i \n",filename,fitx);
+    		return -1;
+  	}
+  	printf("%s Bus-a zuzen ireki da, %i\n",filename,fitx);
+	  // Busaren barruan bilatu sentsorearen helbidea eta hau slave bezela finkatu.
+  	if (ioctl(fitx, I2C_SLAVE, MPL3115A2_ADDRESS) < 0) {
+    		printf("Slave Helidea finkatzean arazoa \n");
+    		return -1 ;
+  	}
+
+  	printf("Senstore barometrikoa zuzen atzitu da \n");
+    if(!MPL3115A2_GetMode(fitx))
+    {
+        Sentsorea_Hasieratu(fitx);
+    }
+    
+    return fitx;    
 
 }
 
-float Temp_irakurketa(){
-	
-	float tenperatura=0.0;
-	char buf[10];
-	FILE *fitx = fopen(TEMP_FITX,"r");
-//	if(fitx== NULL)	
-	fgets(buf,sizeof(buf),fitx);
-	tenperatura=atof(buf) * temp_eskala;
-//        printf("Temp = %2.6f \n", tenperatura);
-	fclose(fitx);
-	return tenperatura;
-}
 
 
 

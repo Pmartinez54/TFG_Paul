@@ -3,14 +3,14 @@
 #define __MPL3115A2_H__
 #define TRUE 1
 #define FALSE 0
-    
+
 #define MPL3115A2_ADDRESS 0x60  // Sentsorearen helbidea I2c-1 busean
 
 #define STATUS 0x00                 //OUT_P eta OUT_T erregistroen egoerari buruzko informazioa eskaintzen du
-#define OUT_P_MSB 0x01          //Presio ala altitude balioa (aukeratutako formatuaren arabera)(19-12)bitak  
+#define OUT_P_MSB 0x01          //Presio ala altitude balioa (aukeratutako formatuaren arabera)(19-12)bitak
 #define OUT_P_CSB 0x02          //(11-4)bitak
 #define OUT_P_LSB 0x03          //(3-0)bitak
-#define OUT_T_MSB 0x04          //Tenperatura balioa (11-4)bitak 
+#define OUT_T_MSB 0x04          //Tenperatura balioa (11-4)bitak
 #define OUT_T_LSB 0x05          //(3-0)bitak
 #define DR_STATUS 0x06          //OUT_P eta OUT_T erregistroen egoerari buruzko informazioa eskaintzen du
 #define OUT_P_DELTA_MSB 0x07    //Ezberdintasuna hartutako azkenek pRESIO ALA LATITUDEo balioarekiko (19-12)bitak
@@ -21,7 +21,7 @@
 #define WHO_AM_I 0x0C           //SENTSOREAREN id-A
 
 /**********Printzipioz erabiliko ez ditudan erregistroak**********/
-#define F_STATUS 0x0D           
+#define F_STATUS 0x0D
 #define F_DATA 0x0E
 #define F_SETUP 0x0F
 #define TIME_DLY 0x10
@@ -46,7 +46,7 @@
 #define T_MAX_MSB 0x24
 #define T_MAX_LSB 0x25
 
-#define CTRL_REG5 0x2A 
+#define CTRL_REG5 0x2A
 #define OFF_P 0x2B
 #define OFF_T 0x2C
 #define OFF_H 0x2D
@@ -55,7 +55,7 @@
 /*******************Interrupt modurako erregistroak********************/
 #define INT_SOURCE 0x12  // Sentsorearen irakurketak sortutako flag-en helbidea .
 #define PT_DATA_CFG 0x13 // Tenperatura eta presioren irakurketak flag-ak sortu dezaten ala ez konfiguratzeko erregistroa.
- 
+
 /*************************Kontrol Erregistroak*************************/
 #define CTRL_REG1 0x26 // Senstorea hasieratzeko eta honen zenbait parametro aukeratzeko balio dueen eregustroa.
 #define CTRL_REG2 0x27 // Control parametroak ( beste artean konfiguratu zenbat denbora pasa flag-en artean).
@@ -82,7 +82,7 @@
 #define SBYB 0x01 //Sentsorea aktibatu
 
 // Oversample ratio (sample arteko milisegundu minimoak)
-#define OS_1 0x00 // 6 ms 
+#define OS_1 0x00 // 6 ms
 #define OS_2 OS0 // 10 ms
 #define OS_4 OS1 // 18 ms
 #define OS_8 OS1 | OS0 // 34 ms
@@ -107,9 +107,9 @@
 #define CLEAR_ST 0xF0*/
 /**********************3.Kontrol Erregistroa****************************/
 #define IPOL1 0x10 //INT1 flag-a  piztean 1-era jartzea eta ez 0-ra
-#define PP_OD1 0x08 
+#define PP_OD1 0x08
 #define IPOL2 0x02 ////INT2 flag-a  piztean 1-era jartzea eta ez 0-ra
-#define PP_OD2 0x01 
+#define PP_OD2 0x01
 
 /**********************4.Kontrol erregistroa****************************/
 #define INT_EN_DRDY 0x80 //Da
@@ -121,9 +121,9 @@
 #define INT_EN_PCHG 0x02 //Presioa aldatzea ahalbidetzea flag-a altsatzea
 #define INT_EN_TCHG 0x01 //Tenperatura aldatzea ahalbidetzea flag-a altsatzea
 #define INT_EN_CLEAR 0x00
- 
+
 /**********************5.Kontrol erregistroa****************************/
- 
+
 #define INT_CFG_DRDY 0x80 //Edozein int1 interrupt seinalean finkatzeko
 #define INT_CFG_FIFO 0x40
 #define INT_CFG_PW 0x20
@@ -163,6 +163,7 @@
 typedef enum { PSI,
 INHG,
 MMHG} unitsType;
+
 typedef enum { SR1 = OS_1,
 SR2 = OS_2,
 SR3 = OS_4,
@@ -171,39 +172,45 @@ SR5 = OS_16,
 SR6 = OS_32,
 SR7 = OS_64,
 SR8 = OS_128} OverSample_t;
+
 void MPL3115A2_Hasieratu_Polling(int fitx); //Sentsorea Hasoeratu Polling moduan (Irakurketak eginez programatik eta ez flag-a piztean.)
 unsigned char MPL3115A2_Id(int fitx); //Sentsorearen Id-a bueltatzen du.
 unsigned char MPL3115A2_GetMode(int fitx); //Sentsorea StandBy ala active moduan dagoen esaten du.
+void MPL3115A2_StandbyMode(int fitx); //StandbyMode
+int MPL3115A2_Datu_berriaztuak(int fitx); // Bueltatzen du ea datu berriak dauden azkeneko irakurketatik
 void MPL3115A2_StandbyMode(int fitx);  //StandBy moduan jartzen du (ctrl1 erregistroa aldatzeko modua)
 void MPL3115A2_ActiveMode(int fitx); // Irakurketak Hasi.
 void MPL3115A2_AltimeterMode(int fitx); // Altimetro modua aktibatzen du.
-float MPL3115A2_ReadAltitude(int fitx); // Altitudea bueltatzen du(metroak ur mail gainetik) 
-void MPL3115A2_SetAltimeterOffset(int fitx,unsigned char H_Offset);
-void MPL3115A2_BarometerMode(int fitx); //Barometro modua aktibatzen du. 
-void MPL3115A2_SetPressureOffset(int fitx,unsigned char P_Offset);
+float MPL3115A2_ReadAltitude(int fitx); // Altitudea bueltatzen du(metroak ur mail gainetik)
+void MPL3115A2_BarometerMode(int fitx); //Barometro modua aktibatzen du.
 float MPL3115A2_GetMinimumPressure(int fitx);
 float MPL3115A2_GetMaximumPressure(int fitx);
-unsigned int MPL3115A2_ReadBarometicPressureInput(int fitx);
 float MPL3115A2_ReadPressure(int fitx); //Presioaren balio bueltatzen du Paskaletan
-void MPL3115A2_SetPressureAlarmThreshold(int fitx,unsigned int thresh);
-void MPL3115A2_SetPressureTargetWindow(int fitx,unsigned int target,unsigned int window);
 float MPL3115A2_ReadTemperature(int fitx); // Tenperatura bueltatzen du Celsiuetan
 float MPL3115A2_GetMinimumTemperature(int fitx);
 float MPL3115A2_GetMaximumTemperature(int fitx);
-void MPL3115A2_SetTempTargetWindow(int fitx,unsigned int target,unsigned int window);
-void MPL3115A2_SetTemperatureThreshold(int fitx,unsigned char thresh);
-void MPL3115A2_SetTempOffset(int fitx,char T_Offset);
-void MPL3115A2_OutputSamplxeRate(int fitx,unsigned char);
-void MPL3115A2_SetAcquisitionTimeStep(int fitx,unsigned char); 
 void MPL3115A2_EnableEventFlags(int fitx); // Beharrezko flag-ak pizten ditu
-void MPL3115A2_ToggleOneShot(int fitx);
 void MPL3115A2_ClearInterrupts(int fitx);
 void MPL3115A2_ConfigureInterruptPin(int fitx,unsigned char intrrpt,unsigned char pin);
 void MPL3115A2_ConfigurePressureInterrupt(int fitx);
-void MPL3115A2_ConfigureAltitudeInterrupt(int fitx); 
+void MPL3115A2_ConfigureAltitudeInterrupt(int fitx);
 unsigned char MPL3115A2_ReadByte(int fitx,char reg);
 void MPL3115A2_ReadByteArray(int fitx,char reg,char *buffer, unsigned int length);
 void MPL3115A2_WriteByte(int fitx,char reg, char value);
 void MPL3115A2_WriteByteArray(int fitx,char reg, char* buffer, unsigned int length);
-int MPL3115A2_Datu_berriaztuak(int fitx); // Bueltatzen du ea datu berriak dauden azkeneko irakurketatik
+
+//Momentuz erabilera eukiko ez dituzten funtzioak
+
+//void MPL3115A2_SetAltimeterOffset(int fitx,unsigned char H_Offset);
+//void MPL3115A2_SetPressureOffset(int fitx,unsigned char P_Offset);
+//unsigned int MPL3115A2_ReadBarometicPressureInput(int fitx);
+//void MPL3115A2_SetPressureAlarmThreshold(int fitx,unsigned int thresh);
+//void MPL3115A2_SetPressureTargetWindow(int fitx,unsigned int target,unsigned int window);
+//void MPL3115A2_SetTempTargetWindow(int fitx,unsigned int target,unsigned int window);
+//void MPL3115A2_SetTemperatureThreshold(int fitx,unsigned char thresh);
+//void MPL3115A2_SetTempOffset(int fitx,char T_Offset);
+//void MPL3115A2_OutputSamplxeRate(int fitx,unsigned char);
+//void MPL3115A2_SetAcquisitionTimeStep(int fitx,unsigned char);
+//void MPL3115A2_ToggleOneShot(int fitx);
+//
 
