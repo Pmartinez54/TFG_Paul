@@ -5,8 +5,8 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "MPL3115A2.h"
-#include "Barometro_irakurketa.h"
+#include "./MPL3115A2_LIB/MPL3115A2.h"
+#include "./Barometro_funtzioak/Barometro_irakurketa.h"
 
 void  main()
 {
