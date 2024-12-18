@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "MPL3115A2.h"
+#include "../includes/MPL3115A2.h"
 
 
 
@@ -13,8 +13,18 @@ void MPL3115A2_Hasieratu_Polling(int fitx)
 {
         MPL3115A2_StandbyMode(fitx);
         MPL3115A2_WriteByte(fitx,CTRL_REG1, 0xB8); //Sentsorearen  oversampling ratio 128 (512 ms-tara jarri)
-        MPL3115A2_EnableEventFlags(fitx); //Beharrezko flag-ak pizten ditu
+        MPL3115A2_Baimendu_Flagak(fitx); //Beharrezko flag-ak pizten ditu
         MPL3115A2_ActiveMode(fitx); // Hasieratu irakurketak
+}
+
+void MPL3115A2_Hasieratu_Interrupt(int fitx)
+{
+        MPL3115A2_StandbyMode(fitx);
+        MPL3115A2_WriteByte(fitx,CTRL_REG1, 0xB8); //Sentsorearen  oversampling ratio 128 (512 ms-tara jarri)
+        MPL3115A2_Baimendu_Flagak(fitx); //Beharrezko flag-ak pizten ditu
+        MPL3115A2_Interrupzioak_konfiguratu(fitx);
+        MPL3115A2_ActiveMode(fitx); // Hasieratu irakurketak
+
 }
 
 unsigned char MPL3115A2_Id(int fitx)
@@ -163,6 +173,9 @@ float MPL3115A2_ReadPressure(int fitx)
         MPL3115A2_WriteByte(fitx,P_WND_LSB,tmpLSB);
 }*/
 
+
+
+
 float MPL3115A2_ReadTemperature(int fitx)
 {
         char temperature[2];
@@ -203,11 +216,11 @@ float MPL3115A2_GetMaximumTemperature(int fitx)
         MPL3115A2_WriteByte(fitx,T_WND,window);
 }*/
 
-/*void MPL3115A2_SetTemperatureThreshold(int fitx,unsigned char thresh)
+void MPL3115A2_Interrupzioak_konfiguratu(int fitx)
 {
-        MPL3115A2_WriteByte(fitx,CTRL_REG4,INT_EN_TTH); //enable temperature interrupt
-        MPL3115A2_WriteByte(fitx,CTRL_REG5,INT_EN_TTH); //map to interrupt
-}*/
+        MPL3115A2_WriteByte(fitx,CTRL_REG4,INT_EN_PTH|INT_EN_PCHG|INT_EN_TCHG); //Presio eta Tenperatura flag-ak konfiguratu
+        MPL3115A2_WriteByte(fitx,CTRL_REG5,INT_EN_DRDY); 
+}
 
 /*void MPL3115A2_SetTempOffset(int fitx,char T_Offset)
 {
@@ -241,7 +254,7 @@ float MPL3115A2_GetMaximumTemperature(int fitx)
         }
 }*/
 
-void MPL3115A2_EnableEventFlags(int fitx)
+void MPL3115A2_Baimendu_Flagak(int fitx)
 {
         MPL3115A2_WriteByte(fitx,PT_DATA_CFG, 0x07); // Presio eta ternperatura  Flag-ak ahalbidetzen ditu.
 }
@@ -256,6 +269,12 @@ void MPL3115A2_EnableEventFlags(int fitx)
         MPL3115A2_WriteByte(fitx,CTRL_REG1, tempSetting);
 }*/
 
+int MPL3115A2_konprobatu_flaga(int fitx)
+{
+        unsigned char  emaitza = MPL3115A2_ReadByte(fitx,0x12);
+        return (emaitza & 0x80) ? 1 : 0;
+
+}
 void MPL3115A2_ConfigureInterruptPin(int fitx,unsigned char intrrpt,unsigned char pin)
 {
         MPL3115A2_WriteByte(fitx,CTRL_REG5,(pin << intrrpt));

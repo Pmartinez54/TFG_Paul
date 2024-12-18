@@ -3,12 +3,12 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "./Termometro_funtzioak/Termometro_irakurketa.h"
+#include "../../includes/Termometro_irakurketa.h"
 
 void  main()
 {
     int fitx;
-    fitx= Senstorea_Aatzitu_Term();
+    fitx= Senstorea_Aatzitu_Term(0x48);
     
     if(fitx<0)
         exit(1);

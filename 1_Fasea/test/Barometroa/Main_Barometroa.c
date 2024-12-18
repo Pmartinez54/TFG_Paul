@@ -5,13 +5,21 @@
 #include <stdlib.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
-#include "./MPL3115A2_LIB/MPL3115A2.h"
-#include "./Barometro_funtzioak/Barometro_irakurketa.h"
+#include "../..//includes/MPL3115A2.h"
+#include "../../includes/Barometro_irakurketa.h"
+
+void Irakurketa_Bar(unsigned char helb);
 
 void  main()
 {
-    int fitx;
-    fitx= Senstorea_Aatzitu(fitx);
+    Irakurketa_Bar(0x60); 
+}
+
+
+void Irakurketa_Bar(unsigned char helb)
+{
+    int fitx=0;
+    fitx= Senstorea_Aatzitu(helb);
     
     if(fitx<0)
         exit(1);

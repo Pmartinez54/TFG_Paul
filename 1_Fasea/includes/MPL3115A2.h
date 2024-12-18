@@ -174,6 +174,7 @@ SR7 = OS_64,
 SR8 = OS_128} OverSample_t;
 
 void MPL3115A2_Hasieratu_Polling(int fitx); //Sentsorea Hasoeratu Polling moduan (Irakurketak eginez programatik eta ez flag-a piztean.)
+void MPL3115A2_Hasieratu_Interrupt(int fitx);
 unsigned char MPL3115A2_Id(int fitx); //Sentsorearen Id-a bueltatzen du.
 unsigned char MPL3115A2_GetMode(int fitx); //Sentsorea StandBy ala active moduan dagoen esaten du.
 void MPL3115A2_StandbyMode(int fitx); //StandbyMode
@@ -189,7 +190,9 @@ float MPL3115A2_ReadPressure(int fitx); //Presioaren balio bueltatzen du Paskale
 float MPL3115A2_ReadTemperature(int fitx); // Tenperatura bueltatzen du Celsiuetan
 float MPL3115A2_GetMinimumTemperature(int fitx);
 float MPL3115A2_GetMaximumTemperature(int fitx);
-void MPL3115A2_EnableEventFlags(int fitx); // Beharrezko flag-ak pizten ditu
+void MPL3115A2_Interrupzioak_konfiguratu(int fitx);
+void MPL3115A2_Baimendu_Flagak(int fitx); // Beharrezko flag-ak pizten ditu
+int MPL3115A2_konprobatu_flaga(int fitx);
 void MPL3115A2_ClearInterrupts(int fitx);
 void MPL3115A2_ConfigureInterruptPin(int fitx,unsigned char intrrpt,unsigned char pin);
 void MPL3115A2_ConfigurePressureInterrupt(int fitx);
@@ -207,10 +210,10 @@ void MPL3115A2_WriteByteArray(int fitx,char reg, char* buffer, unsigned int leng
 //void MPL3115A2_SetPressureAlarmThreshold(int fitx,unsigned int thresh);
 //void MPL3115A2_SetPressureTargetWindow(int fitx,unsigned int target,unsigned int window);
 //void MPL3115A2_SetTempTargetWindow(int fitx,unsigned int target,unsigned int window);
-//void MPL3115A2_SetTemperatureThreshold(int fitx,unsigned char thresh);
 //void MPL3115A2_SetTempOffset(int fitx,char T_Offset);
 //void MPL3115A2_OutputSamplxeRate(int fitx,unsigned char);
 //void MPL3115A2_SetAcquisitionTimeStep(int fitx,unsigned char);
 //void MPL3115A2_ToggleOneShot(int fitx);
 //
+
 
