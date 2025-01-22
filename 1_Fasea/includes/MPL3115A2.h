@@ -6,7 +6,7 @@
 
 #define MPL3115A2_ADDRESS 0x60  // Sentsorearen helbidea I2c-1 busean
 
-#define STATUS 0x00                 //OUT_P eta OUT_T erregistroen egoerari buruzko informazioa eskaintzen du
+#define STATUS 0x00             //OUT_P eta OUT_T erregistroen egoerari buruzko informazioa eskaintzen du
 #define OUT_P_MSB 0x01          //Presio ala altitude balioa (aukeratutako formatuaren arabera)(19-12)bitak
 #define OUT_P_CSB 0x02          //(11-4)bitak
 #define OUT_P_LSB 0x03          //(3-0)bitak

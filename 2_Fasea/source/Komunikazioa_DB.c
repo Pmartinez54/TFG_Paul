@@ -4,7 +4,8 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
-#include <../includes/Komunikazioa_DB.h>
+#include "../includes/Komunikazioa_DB.h"
+#include "../includes/Barometro_irakurketa.h"
 
 
 
@@ -41,15 +42,8 @@ int conectar_Servidor()
 
 }
 
-void  mandar_lectura(int server_Socket,int senstsore_zenb, float temperatura, float presioa) {
-    char request[1024], payload[256];
-
-
-    // Prepare the payload (line protocol format)
-    if(presioa==0.0)
-        snprintf(payload, sizeof(payload), "Temperatura,location=Senstore_%i temp=%.2f\n", senstsore_zenb, temperatura);
-    else
-        snprintf(payload, sizeof(payload), "Barometrikoa,location=Senstore_%i temp=%.2f,pres=%.2f\n", senstsore_zenb, temperatura, presioa);
+void  mandar_lectura(int server_Socket,char *payload) {
+    char request[1024];
 
     // Prepare the HTTP POST request
     snprintf(request, sizeof(request),
@@ -62,7 +56,7 @@ void  mandar_lectura(int server_Socket,int senstsore_zenb, float temperatura, fl
              "%s",
              ORG, BUCKET, SERVER_IP,TOKEN, strlen(payload), payload);
     
-    printf("%s\n",request);
+   // printf("%s\n",request);
     // Send the request
     if (send(server_Socket, request, strlen(request), 0) < 0) {
         perror("Send failed");
@@ -70,25 +64,12 @@ void  mandar_lectura(int server_Socket,int senstsore_zenb, float temperatura, fl
         exit(EXIT_FAILURE);
     }
 
-    printf("Data sent: %s", payload);
+    //printf("Data sent: %s", payload);
 
     char response[1024];
     usleep(100);
 
     recv(server_Socket, response, sizeof(response) - 1, 0);
-    printf("Server Response:\n%s\n", response);
+   // printf("Server Response:\n%s\n", response);
     // Close the socket
-    close(server_Socket);
-}
-
-int main() {
-    // Simulated sensor data
-    float sensor_value = 23.5;
-    int socket = conectar_Servidor();
-    // Send data to InfluxDB
-    mandar_lectura(socket,1, sensor_value,3.0);
-
-    
-
-    return 0;
 }

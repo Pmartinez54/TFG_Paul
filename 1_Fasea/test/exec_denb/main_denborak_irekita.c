@@ -44,7 +44,7 @@ void  main()
 
 int Baro_Irakurri(int fitx,unsigned char helb)
 {
-    fitx = Senstorea_Aatzituu(fitx,helb);
+    fitx = Senstorea_Aatzitu_irekita(fitx,helb);
     if(fitx<0)
         exit(1);
 //    printf("fitx = %i\n",fitx);    
@@ -59,7 +59,7 @@ int Baro_Irakurri(int fitx,unsigned char helb)
 
 int Temp_Irakurri(int fitx,unsigned char helb)
 {
-    fitx = Senstorea_Aatzituu_Term(fitx, helb);
+    fitx = Senstorea_Aatzitu_irekita_Term(fitx, helb);
    // printf("fitx = %i",fitx);
     if(fitx<0)
         exit(1);

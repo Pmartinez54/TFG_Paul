@@ -8,7 +8,7 @@
 #include "../includes/MPL3115A2.h"
 
 
-
+//Sentsorea hasieratu inkesta bidez irakurketak egiteko
 void MPL3115A2_Hasieratu_Polling(int fitx)
 {
         MPL3115A2_StandbyMode(fitx);
@@ -17,6 +17,7 @@ void MPL3115A2_Hasieratu_Polling(int fitx)
         MPL3115A2_ActiveMode(fitx); // Hasieratu irakurketak
 }
 
+//Sentsorea hasieratu etenen bidez irakurketak egiteko
 void MPL3115A2_Hasieratu_Interrupt(int fitx)
 {
         MPL3115A2_StandbyMode(fitx);
@@ -27,18 +28,21 @@ void MPL3115A2_Hasieratu_Interrupt(int fitx)
 
 }
 
+//Sentsorearen Id-a bueltatzen du, erabili daiteke konprobatzeko ondo konektatuta dagoela senstsorea , balio lehenetsia C4 da.
 unsigned char MPL3115A2_Id(int fitx)
 {
         unsigned char id = MPL3115A2_ReadByte(fitx,WHO_AM_I);
         return id;
 }
 
+//1 Bueltatzen du irakurketa moduan dagoenean eta 0 konfigurazio moduan dagoenan. 
 unsigned char MPL3115A2_GetMode(int fitx)
 {
         unsigned char status = MPL3115A2_ReadByte(fitx,SYSMOD);
         return (status & 0x01) ? 1 : 0;
 }
 
+//Konfigutazo moduan jartzen du senstsorea.
 void MPL3115A2_StandbyMode(int fitx)
 {
       unsigned char ctrl_reg = MPL3115A2_ReadByte(fitx,CTRL_REG1);
@@ -46,6 +50,7 @@ void MPL3115A2_StandbyMode(int fitx)
       MPL3115A2_WriteByte(fitx,CTRL_REG1, ctrl_reg);               
 }
 
+//1 bueltatuko du aldaketa egon bada azkeneko irakurketatik bestela 0
 int MPL3115A2_Datu_berriaztuak(int fitx)
 {
 
@@ -54,27 +59,30 @@ int MPL3115A2_Datu_berriaztuak(int fitx)
 
 }
 
+//Irakurketa moduan jartzen du sentsorea
 void MPL3115A2_ActiveMode(int fitx)
 {
-        unsigned char tempSetting = MPL3115A2_ReadByte(fitx,CTRL_REG1); //Read current settings
-        tempSetting |= SBYB; //Set SBYB bit for Active mode
+        unsigned char tempSetting = MPL3115A2_ReadByte(fitx,CTRL_REG1); 
+        tempSetting |= SBYB; 
         MPL3115A2_WriteByte(fitx,CTRL_REG1, tempSetting);
 }
 
+//Senstsorea altitudea irakurtzeko konfiguratzen du.
 void MPL3115A2_AltimeterMode(int fitx)
 {
         MPL3115A2_StandbyMode(fitx);
-        unsigned char ctrl_reg = MPL3115A2_ReadByte(fitx,CTRL_REG1); //Read current settings
+        unsigned char ctrl_reg = MPL3115A2_ReadByte(fitx,CTRL_REG1); 
 
-        ctrl_reg = ALT|OS_128; //Set ALT bit to one and enable back Active mode
+        ctrl_reg = ALT|OS_128;
         MPL3115A2_ActiveMode(fitx);
         MPL3115A2_WriteByte(fitx,CTRL_REG1, ctrl_reg);
 }
 
+//Altitudearen balioa bueltatzen du.
 float MPL3115A2_ReadAltitude(int fitx)
 {
         char altpbyte[3] = {0x00};
-        MPL3115A2_ReadByteArray(fitx,OUT_P_MSB,altpbyte,3); //Read altitude data
+        MPL3115A2_ReadByteArray(fitx,OUT_P_MSB,altpbyte,3); 
         int m_altitude = altpbyte[0];
         int c_altitude = altpbyte[1];
         int l_altitude = altpbyte[2];
@@ -82,14 +90,8 @@ float MPL3115A2_ReadAltitude(int fitx)
         return (float)(al/65536);
 }
 
-/*void MPL3115A2_SetAltimeterOffset(int fitx,unsigned char H_Offset)
-{
-        if((H_Offset > -128) || (H_Offset < 128))
-        {
-                MPL3115A2_WriteByte(fitx,OFF_H,H_Offset);
-        }
-}*/
 
+//Senstsorea presioa irakurtzeko konfiguratzen du.
 void MPL3115A2_BarometerMode(int fitx)
 {
         MPL3115A2_StandbyMode(fitx);
@@ -101,14 +103,7 @@ void MPL3115A2_BarometerMode(int fitx)
         MPL3115A2_ActiveMode(fitx);
 }
 
-/*void MPL3115A2_SetPressureOffset(int fitx,unsigned char P_Offset)
-{
-        if((P_Offset > -128) || (P_Offset < 128))
-        {
-                MPL3115A2_WriteByte(fitx,OFF_P,P_Offset);
-        }
-}*/
-
+//Presioaren irakurritako balio baxuena bueltatzen du.
 float MPL3115A2_GetMinimumPressure(int fitx)
 {
         char minPressure[3] = {0x00};
@@ -116,11 +111,12 @@ float MPL3115A2_GetMinimumPressure(int fitx)
 
         unsigned char m_altitude = minPressure[0];
         unsigned char c_altitude = minPressure[1];
-        float l_altitude = (float)(minPressure[2]>>4)/4; //dividing by 4, since two lowest bits are fractional value
-        return((float)(m_altitude<<10 | c_altitude<<2)+l_altitude); //shifting 2 to the left to make room for LSB
+        float l_altitude = (float)(minPressure[2]>>4)/4; 
+        return((float)(m_altitude<<10 | c_altitude<<2)+l_altitude); 
 
 }
 
+//Presioaren irakurritako balio maximoa bueltatzen du.
 float MPL3115A2_GetMaximumPressure(int fitx)
 {
         char maxPressure[3] = {0x00};
@@ -128,18 +124,12 @@ float MPL3115A2_GetMaximumPressure(int fitx)
 
         unsigned char m_altitude = maxPressure[0];
         unsigned char c_altitude = maxPressure[1];
-        float l_altitude = (float)(maxPressure[2]>>4)/4; //dividing by 4, since two lowest bits are fractional value
-        return((float)(m_altitude<<10 | c_altitude<<2)+l_altitude); //shifting 2 to the left to make room for LSB
+        float l_altitude = (float)(maxPressure[2]>>4)/4; 
+        return((float)(m_altitude<<10 | c_altitude<<2)+l_altitude); 
 }
 
-/*unsigned int MPL3115A2_ReadBarometicPressureInput(int fitx)
-{
-        unsigned char barMSB = MPL3115A2_ReadByte(fitx,BAR_IN_MSB);
-        unsigned char barLSB = MPL3115A2_ReadByte(fitx,BAR_IN_LSB);
 
-        return ((barMSB << 8) | barLSB);
-}*/
-
+//Presioaren balioa bueltatzen du.
 float MPL3115A2_ReadPressure(int fitx)
 {
         char pbyte[3];
@@ -152,7 +142,146 @@ float MPL3115A2_ReadPressure(int fitx)
         return pressure;
 }
 
-/*void MPL3115A2_SetPressureAlarmThreshold(int fitx,unsigned int thresh)
+//Temperatura bueltatzen du.
+float MPL3115A2_ReadTemperature(int fitx)
+{
+        char temperature[2];
+        char reg[1] = {0x04};
+        MPL3115A2_ReadByteArray(fitx,0x04,temperature,2);
+
+        int temp = ((temperature[0] * 256) + (temperature[1] & 0xF0)) / 16;
+        float cTemp = (temp / 16.0);
+
+        return cTemp;
+}
+
+//Temperatura irakurritako balio baxuena bueltatzen du.
+float MPL3115A2_GetMinimumTemperature(int fitx)
+{
+        char temperature[2] = {0x00};
+        MPL3115A2_ReadByteArray(fitx,T_MIN_MSB,temperature,2);
+
+        float templsb = (temperature[1]>>4) / 16.0; //temp, fraction of a degree
+        float minTemp = (float)(temperature[0] + templsb);
+
+        return minTemp;
+}
+
+//Temperatura irakurritako balio maximoa bueltatzen du.
+float MPL3115A2_GetMaximumTemperature(int fitx)
+{
+        char temperature[2] = {0x00};
+        MPL3115A2_ReadByteArray(fitx,T_MAX_MSB,temperature,2);
+
+        float templsb = (temperature[1]>>4) / 16.0; //temp, fraction of a degree
+        float maxTemp = (float)(temperature[0] + templsb);
+
+        return maxTemp;
+}
+
+//Presio eta Tenperatura flag-ak konfiguratu
+void MPL3115A2_Interrupzioak_konfiguratu(int fitx)
+{
+        MPL3115A2_WriteByte(fitx,CTRL_REG4,INT_EN_PTH|INT_EN_PCHG|INT_EN_TCHG); 
+        MPL3115A2_WriteByte(fitx,CTRL_REG5,INT_EN_DRDY); 
+}
+
+
+/// Presio eta ternperatura  Flag-ak ahalbidetzen ditu.
+void MPL3115A2_Baimendu_Flagak(int fitx)
+{
+        MPL3115A2_WriteByte(fitx,PT_DATA_CFG, 0x07); 
+}
+
+//Konprobatzen du ea falg-renbat piztu den
+int MPL3115A2_konprobatu_flaga(int fitx)
+{
+        unsigned char  emaitza = MPL3115A2_ReadByte(fitx,0x12);
+        return (emaitza & 0x80) ? 1 : 0;
+
+}
+
+//Etenetarako erabilitako pin-a konfiguratzen du
+void MPL3115A2_ConfigureInterruptPin(int fitx,unsigned char intrrpt,unsigned char pin)
+{
+        MPL3115A2_WriteByte(fitx,CTRL_REG5,(pin << intrrpt));
+}
+
+//Konfiguratu Eten pinak beheko hustubide aktiborako
+void MPL3115A2_ConfigurePressureInterrupt(int fitx)
+{
+        MPL3115A2_WriteByte(fitx,CTRL_REG3,PP_OD1|PP_OD2);
+}
+
+//Konfiguratu Eten pinak beheko hustubide aktiborako
+void MPL3115A2_ConfigureAltitudeInterrupt(int fitx)
+{
+        MPL3115A2_WriteByte(fitx,CTRL_REG3,PP_OD1|PP_OD2); 
+}
+
+//Eten pinen konfigurazioa garbitu
+void MPL3115A2_ClearInterrupts(int fitx)
+{
+        MPL3115A2_ReadByte(fitx,OUT_P_MSB);
+        MPL3115A2_ReadByte(fitx,OUT_P_CSB); 
+        MPL3115A2_ReadByte(fitx,OUT_P_LSB);
+        MPL3115A2_ReadByte(fitx,OUT_T_MSB);
+        MPL3115A2_ReadByte(fitx,OUT_T_LSB);
+        MPL3115A2_ReadByte(fitx,F_STATUS);
+}
+
+//Pasatuz irekitako sentsorearin dagokion fitxategia eta senstsore barruko erregistroa byte bat irakurtzen du.
+unsigned char MPL3115A2_ReadByte(int fitx,char reg)
+{
+        return i2c_smbus_read_byte_data(fitx, reg);
+}
+
+//Pasatuz irekitako sentsorearin dagokion fitxategia eta senstsore barruko erregistroa byte array-a irakurtzen du.
+void MPL3115A2_ReadByteArray(int fitx,char reg,char *buffer, unsigned int length)
+{
+        i2c_smbus_read_i2c_block_data(fitx,reg,length,buffer);
+}
+
+//Pasatuz irekitako sentsorearin dagokion fitxategia eta senstsore barruko erregistroa byte bat idazten du.
+void MPL3115A2_WriteByte(int fitx,char reg, char value)
+{
+      i2c_smbus_write_byte_data(fitx, reg, value)   ;
+}
+
+//Pasatuz irekitako sentsorearin dagokion fitxategia eta senstsore barruko erregistroa byte array bat idazten du.
+void MPL3115A2_WriteByteArray(int fitx,char reg, char* buffer, unsigned int length)
+{     
+        i2c_smbus_write_i2c_block_data(fitx,reg,length, buffer);
+}
+
+//Momentuz erabilgarriak ez diren funtzioak
+
+/*void MPL3115A2_SetAltimeterOffset(int fitx,unsigned char H_Offset)
+{
+        if((H_Offset > -128) || (H_Offset < 128))
+        {
+                MPL3115A2_WriteByte(fitx,OFF_H,H_Offset);
+        }
+}*/
+
+ /*void MPL3115A2_SetPressureOffset(int fitx,unsigned char P_Offset)
+{
+        if((P_Offset > -128) || (P_Offset < 128))
+        {
+                MPL3115A2_WriteByte(fitx,OFF_P,P_Offset);
+        }
+}*/
+
+ /*unsigned int MPL3115A2_ReadBarometicPressureInput(int fitx)
+{
+        unsigned char barMSB = MPL3115A2_ReadByte(fitx,BAR_IN_MSB);
+        unsigned char barLSB = MPL3115A2_ReadByte(fitx,BAR_IN_LSB);
+
+        return ((barMSB << 8) | barLSB);
+}*/
+
+
+ /*void MPL3115A2_SetPressureAlarmThreshold(int fitx,unsigned int thresh)
 {
         unsigned char threshMSB = (unsigned char) (thresh << 8);
         unsigned char threshLSB = (unsigned char) thresh;
@@ -173,54 +302,11 @@ float MPL3115A2_ReadPressure(int fitx)
         MPL3115A2_WriteByte(fitx,P_WND_LSB,tmpLSB);
 }*/
 
-
-
-
-float MPL3115A2_ReadTemperature(int fitx)
-{
-        char temperature[2];
-        char reg[1] = {0x04};
-        MPL3115A2_ReadByteArray(fitx,0x04,temperature,2);
-
-        int temp = ((temperature[0] * 256) + (temperature[1] & 0xF0)) / 16;
-        float cTemp = (temp / 16.0);
-
-        return cTemp;
-}
-
-float MPL3115A2_GetMinimumTemperature(int fitx)
-{
-        char temperature[2] = {0x00};
-        MPL3115A2_ReadByteArray(fitx,T_MIN_MSB,temperature,2);
-
-        float templsb = (temperature[1]>>4) / 16.0; //temp, fraction of a degree
-        float minTemp = (float)(temperature[0] + templsb);
-
-        return minTemp;
-}
-
-float MPL3115A2_GetMaximumTemperature(int fitx)
-{
-        char temperature[2] = {0x00};
-        MPL3115A2_ReadByteArray(fitx,T_MAX_MSB,temperature,2);
-
-        float templsb = (temperature[1]>>4) / 16.0; //temp, fraction of a degree
-        float maxTemp = (float)(temperature[0] + templsb);
-
-        return maxTemp;
-}
-
 /*void MPL3115A2_SetTempTargetWindow(int fitx,unsigned int target,unsigned int window)
 {
         MPL3115A2_WriteByte(fitx,T_TGT,target);
         MPL3115A2_WriteByte(fitx,T_WND,window);
 }*/
-
-void MPL3115A2_Interrupzioak_konfiguratu(int fitx)
-{
-        MPL3115A2_WriteByte(fitx,CTRL_REG4,INT_EN_PTH|INT_EN_PCHG|INT_EN_TCHG); //Presio eta Tenperatura flag-ak konfiguratu
-        MPL3115A2_WriteByte(fitx,CTRL_REG5,INT_EN_DRDY); 
-}
 
 /*void MPL3115A2_SetTempOffset(int fitx,char T_Offset)
 {
@@ -254,11 +340,6 @@ void MPL3115A2_Interrupzioak_konfiguratu(int fitx)
         }
 }*/
 
-void MPL3115A2_Baimendu_Flagak(int fitx)
-{
-        MPL3115A2_WriteByte(fitx,PT_DATA_CFG, 0x07); // Presio eta ternperatura  Flag-ak ahalbidetzen ditu.
-}
-
 /*void MPL3115A2_ToggleOneShot(int fitx)
 {
         unsigned char tempSetting = MPL3115A2_ReadByte(fitx,CTRL_REG1); //Read current settings
@@ -268,56 +349,3 @@ void MPL3115A2_Baimendu_Flagak(int fitx)
         tempSetting |= (1<<1); //Set OST bit
         MPL3115A2_WriteByte(fitx,CTRL_REG1, tempSetting);
 }*/
-
-int MPL3115A2_konprobatu_flaga(int fitx)
-{
-        unsigned char  emaitza = MPL3115A2_ReadByte(fitx,0x12);
-        return (emaitza & 0x80) ? 1 : 0;
-
-}
-void MPL3115A2_ConfigureInterruptPin(int fitx,unsigned char intrrpt,unsigned char pin)
-{
-        MPL3115A2_WriteByte(fitx,CTRL_REG5,(pin << intrrpt));
-}
-
-void MPL3115A2_ConfigurePressureInterrupt(int fitx)
-{
-        MPL3115A2_WriteByte(fitx,CTRL_REG3,PP_OD1|PP_OD2); //Configure Interrupt pins for open drain active low
-}
-
-void MPL3115A2_ConfigureAltitudeInterrupt(int fitx)
-{
-        MPL3115A2_WriteByte(fitx,CTRL_REG3,PP_OD1|PP_OD2); //Configure Interrupt pins for open drain active low
-}
-
-void MPL3115A2_ClearInterrupts(int fitx)
-{
-        MPL3115A2_ReadByte(fitx,OUT_P_MSB);
-        MPL3115A2_ReadByte(fitx,OUT_P_CSB); //Configure Interrupt pins for open drain active low
-        MPL3115A2_ReadByte(fitx,OUT_P_LSB);
-        MPL3115A2_ReadByte(fitx,OUT_T_MSB);
-        MPL3115A2_ReadByte(fitx,OUT_T_LSB);
-        MPL3115A2_ReadByte(fitx,F_STATUS);
-}
-
-
-unsigned char MPL3115A2_ReadByte(int fitx,char reg)
-{
-        return i2c_smbus_read_byte_data(fitx, reg);
-}
-
-void MPL3115A2_ReadByteArray(int fitx,char reg,char *buffer, unsigned int length)
-{
-        i2c_smbus_read_i2c_block_data(fitx,reg,length,buffer);
-}
-
-void MPL3115A2_WriteByte(int fitx,char reg, char value)
-{
-      i2c_smbus_write_byte_data(fitx, reg, value)   ;
-}
-
-void MPL3115A2_WriteByteArray(int fitx,char reg, char* buffer, unsigned int length)
-{     
-        i2c_smbus_write_i2c_block_data(fitx,reg,length, buffer);
-}
-

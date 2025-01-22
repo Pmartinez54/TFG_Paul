@@ -42,7 +42,7 @@ void  main()
     }
 }
 
-
+//Barometroaren balioak irakurtzen ditu emaitzak array-ean gordez.
 void Baro_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 {
     int fitx = Senstorea_Aatzitu(helb);
@@ -56,6 +56,7 @@ void Baro_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 
 }
 
+//Termometroaren balioa irakurtzen du emaitzak array-ean gordez.
 void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 {
     int fitx;
@@ -69,23 +70,22 @@ void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 
 }
 
-
+//Konektatutako sentsoreen arabera irakurketak egin etagordetzen ditu enaitzetan
 void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak)
 {
     for(int i =0; i<SENTSOREKOP; i++ )
     {
         if(SentsoreenMota[i]==TEMP)
         {
-            printf("sents numb %i\n", i);
+            //printf("sents numb %i\n", i);
             Temp_Irakurri(Helbideak[i],emaitzak+i);
-            printf("\n");
+           // printf("\n");
         }
         else if(SentsoreenMota[i]==BAR)
         {
-            printf("sents numb %i\n", i);
-            printf("helb 0x%02X\n", Helbideak[i]);
+            //printf("sents numb %i\n", i);
             Baro_Irakurri(Helbideak[i],emaitzak+i);
-            printf("\n");
+            //printf("\n");
         }
         else
         {
@@ -94,6 +94,7 @@ void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak)
     }   
 }
 
+//Senstorearen irakurketak printeatzen ditu.
 void Emaitzak_erakutsi(struct balioak_barometro * emaitzak)
 {
     for(int i=0;i<SENTSOREKOP;i++)
@@ -112,11 +113,4 @@ void Emaitzak_erakutsi(struct balioak_barometro * emaitzak)
             printf("%i -garren setsoreren izaera definitu gabe dago\n",i);
         }
     }
-}
-
-void Emaitzak_Bidali(struct balioak_barometro * emaitzak)
-{
-
-
-
 }

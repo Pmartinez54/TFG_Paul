@@ -1,13 +1,12 @@
-#include <fcntl.h>
 #include <stdio.h>
-#include <i2c/smbus.h>
-#include <linux/i2c-dev.h>
-#include <stdlib.h>
-#include <sys/ioctl.h>
 #include <unistd.h>
+#include <string.h>
+
 
 #include "includes/Barometro_irakurketa.h"
 #include "includes/Termometro_irakurketa.h"
+#include "includes/Komunikazioa_DB.h"
+
 
 
 #define MULT_HELB 0x70 //I2c bus multiplexorearen lehnengo helbidea
@@ -25,25 +24,30 @@ static const unsigned char Helbideak[10] = {HELBIDE_TERM,HELBIDE_BAR,0x70,0x71,0
 //hau bete senstsorekm konektatu ondoren. Lehenengo biak definitu ditut momentuz, zuzenan konektatuta daudelako.
 static const int SentsoreenMota[10] ={TEMP,BAR,-1,-1,-1,-1,-1,-1,-1,-1,};
 
-
-void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak);
+void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitza);
 void Baro_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak);
 void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak);
 void Emaitzak_erakutsi(struct balioak_barometro * emaitzak);
+void Emaitzak_bidali(int socket,struct balioak_barometro * emaitzak);
+
 
 
 void  main()
 {
     struct balioak_barometro *emaitzak= calloc (SENTSOREKOP ,sizeof (struct balioak_barometro));
+    int socket= conectar_Servidor();
     while(1)
     {
         Irakurri_Sentsore_Guztiak(emaitzak);
-        Emaitzak_erakutsi(emaitzak);
+       // Emaitzak_erakutsi(emaitzak);
+        Emaitzak_bidali(socket,emaitzak);
         sleep(1);
     }
+        close(socket);
+
 }
 
-
+//Barometroaren balioak irakurtzen ditu emaitzak array-ean gordez.
 void Baro_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 {
     int fitx = Senstorea_Aatzitu(helb);
@@ -57,6 +61,7 @@ void Baro_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 
 }
 
+//Termometroaren balioa irakurtzen du emaitzak array-ean gordez.
 void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 {
     int fitx;
@@ -64,29 +69,29 @@ void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 
     if(fitx<0)
         exit(1);
-    //printf("fitx = %i",fitx);
+   // printf("fitx = %i",fitx);
     emaitzak->temperatura =Irakurketa_Termometroa(fitx);
     close(fitx);
 
 }
 
-
+//Konektatutako sentsoreen arabera irakurketak egin etagordetzen ditu enaitzetan
 void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak)
 {
     for(int i =0; i<SENTSOREKOP; i++ )
     {
         if(SentsoreenMota[i]==TEMP)
         {
-            printf("sents numb %i\n", i);
+           // printf("sents numb %i\n", i);
             Temp_Irakurri(Helbideak[i],emaitzak+i);
-            printf("\n");
+         //   printf("\n");
         }
         else if(SentsoreenMota[i]==BAR)
         {
-            printf("sents numb %i\n", i);
-            printf("helb 0x%02X\n", Helbideak[i]);
+           // printf("sents numb %i\n", i);
+            //printf("helb 0x%02X\n", Helbideak[i]);
             Baro_Irakurri(Helbideak[i],emaitzak+i);
-            printf("\n");
+           // printf("\n");
         }
         else
         {
@@ -95,46 +100,21 @@ void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak)
     }   
 }
 
-void Emaitzak_erakutsi(struct balioak_barometro * emaitzak)
+//irakukrritako datuak emaitzen datubasera bidaltzen ditu http mezu baten bidez.
+void Emaitzak_bidali(int socket,struct balioak_barometro * emaitzak)
 {
+    char payload[2048]="";
+ // Prepare the payload (line protocol format)
     for(int i=0;i<SENTSOREKOP;i++)
     {
         if(SentsoreenMota[i]==TEMP)
-        {
-            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
-        }
-        else if(SentsoreenMota[i]==BAR)
-        {
-            printf("Presioa: %0.2f Paskal\n",emaitzak[i].presioa);
-            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
-        }
+            snprintf(payload + strlen(payload), sizeof(payload), "Temperatura,location=Senstore_%i temp=%.2f\n", i, (emaitzak+i)->temperatura);
         else
-        {
-            printf("%i -garren setsoreren izaera definitu gabe dago\n",i);
-        }
+            snprintf(payload + strlen(payload), sizeof(payload), "Barometrikoa,location=Senstore_%i temp=%.2f,pres=%.2f\n", i, (emaitzak+i)->temperatura, (emaitzak+i)->presioa);
     }
+    mandar_lectura(socket,payload);
+
+
 }
-
-
-void Emaitzak_bidali(struct balioak_barometro * emaitzak)
-{
-    for(int i=0;i<SENTSOREKOP;i++)
-    {
-        if(SentsoreenMota[i]==TEMP)
-        {
-            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
-        }
-        else if(SentsoreenMota[i]==BAR)
-        {
-            printf("Presioa: %0.2f Paskal\n",emaitzak[i].presioa);
-            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
-        }
-        else
-        {
-            printf("%i -garren setsoreren izaera definitu gabe dago\n",i);
-        }
-    }
-}
-
 
 

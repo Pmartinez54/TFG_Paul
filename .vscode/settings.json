@@ -1,0 +1,6 @@
+{
+    "files.associations": {
+        "barometro_irakurketa.h": "c",
+        "stdlib.h": "c"
+    }
+}
