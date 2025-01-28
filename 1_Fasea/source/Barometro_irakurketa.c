@@ -43,11 +43,11 @@ int Senstorea_Aatzitu(unsigned char helb)
   	//printf("%s Bus-a zuzen ireki da, %i\n",filename,fitx);
 	// Busaren barruan bilatu sentsorearen helbidea eta hau slave bezela finkatu.
   	if (ioctl(fitx, I2C_SLAVE, helb) < 0) {
-    	printf("Slave Helidea finkatzean arazoa \n");
+    	perror("Slave Helidea finkatzean arazoa \n");
     		return -1 ;
   	}
-
-  	//printf("Senstore barometrikoa zuzen atzitu da \n");
+    
+    //printf("Senstore barometrikoa zuzen atzitu da \n");
     //Konprobatzen du ea sentsorea irakurketa moduan dagoen edo geditua dagoen.
     if(!MPL3115A2_GetMode(fitx))
     {

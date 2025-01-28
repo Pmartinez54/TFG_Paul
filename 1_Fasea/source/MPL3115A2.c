@@ -151,7 +151,7 @@ float MPL3115A2_ReadTemperature(int fitx)
 
         int temp = ((temperature[0] * 256) + (temperature[1] & 0xF0)) / 16;
         float cTemp = (temp / 16.0);
-
+       
         return cTemp;
 }
 

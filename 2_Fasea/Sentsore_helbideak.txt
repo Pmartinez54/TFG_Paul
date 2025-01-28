@@ -1,0 +1,7 @@
+## Fitxategi hau konektatutako sentsore kopurua lehenago eta gero sentsoreen mota eta helbidea dauzka. Sentsorerenbat aldatzen bada , beharrezkoa da aldatzea fitxategi hau
+2
+##Lehehenengo balioa izan behar da 0 ala 1 , 0 temperatura sentsorea bada, 1 Sentsore barometrikoa bada
+##Bigarren baioa sentsorearen helbidea i2c busan izan behar da , balio hexadecimal bakarra, bi balioen artean espazio bat egon behar da bakarrik
+##Adibide: 0 0x48 // Temperatura sentsorea 0x48 helbidean 
+0 0x48
+1 0x60

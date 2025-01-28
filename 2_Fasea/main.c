@@ -7,44 +7,92 @@
 #include "includes/Termometro_irakurketa.h"
 #include "includes/Komunikazioa_DB.h"
 
-
-
-#define MULT_HELB 0x70 //I2c bus multiplexorearen lehnengo helbidea
-#define SENTSOREKOP 2 // Sentsore kopurua konektatuk guztira
-#define HELBIDE_BAR 0x60//Busera zuzenan konektatutako sentsore barometrikoaren helbidea.
-#define HELBIDE_TERM 0x48 //Busera zuzenan konektatutako Termometroaren helbidea
 #define BAR 1
 #define TEMP 0
 
 
-//Konektatutako sentsore guztien helbideak, lehennengo zuzenean konektatuak eta gero multiplexorera konektatutakoak;(multiplexoreko helbideak 0x70-tik 0x77-ra dijoazte)
-static const unsigned char Helbideak[10] = {HELBIDE_TERM,HELBIDE_BAR,0x70,0x71,0x72,0x73,0x74,0x75,0x76,0x77};
-
-//Hauek instalazioaren araberazkoak izango dira definitu daitezke lehnago eta gero instalazioan errespetatu zein helbidetan jarri sentsore mota bakarra ala
-//hau bete senstsorekm konektatu ondoren. Lehenengo biak definitu ditut momentuz, zuzenan konektatuta daudelako.
-static const int SentsoreenMota[10] ={TEMP,BAR,-1,-1,-1,-1,-1,-1,-1,-1,};
-
+void Helbideak_irakurri( unsigned char **Helbideak,int **SentsoreenMota ,int *sentsore_kop);
 void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitza);
 void Baro_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak);
-void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak);
-void Emaitzak_erakutsi(struct balioak_barometro * emaitzak);
-void Emaitzak_bidali(int socket,struct balioak_barometro * emaitzak);
+void Irakurri_Sentsore_Guztiak(int sentskop, unsigned char *Helbideak,int *SentsoreenMota,struct balioak_barometro * emaitzak);
+void Emaitzak_erakutsi(int sentskop, unsigned char *Helbideak,int *SentsoreenMota,struct balioak_barometro * emaitzak);
+void Emaitzak_bidali(int socket,int sentskop, unsigned char *Helbideak,int *SentsoreenMota,struct balioak_barometro * emaitzak);
 
 
-
+//Main hau pentsatua dago denbora guztian exekutatzen egoteko beraz simple programatu dut
+//Iterazio bakoitzean sentsore bakoitzaren irakurketa ba egin eta bidaltzeko.
 void  main()
-{
-    struct balioak_barometro *emaitzak= calloc (SENTSOREKOP ,sizeof (struct balioak_barometro));
-    int socket= conectar_Servidor();
+{   
+    unsigned char *Helbideak;
+    int *SentsoreenMota;
+    int sentsore_kop;
+    
+    //Sentsoreen helbideak irakurtzen ditu fitxategi batetik
+    Helbideak_irakurri(&Helbideak,&SentsoreenMota ,&sentsore_kop);
+    
+    struct balioak_barometro *emaitzak= calloc (sentsore_kop ,sizeof (struct balioak_barometro));
+    
+    int socket= Zerbitzarira_Konektatu();
+    
     while(1)
     {
-        Irakurri_Sentsore_Guztiak(emaitzak);
-       // Emaitzak_erakutsi(emaitzak);
-        Emaitzak_bidali(socket,emaitzak);
+        Irakurri_Sentsore_Guztiak(sentsore_kop,Helbideak,SentsoreenMota,emaitzak);
+        Emaitzak_bidali(socket,sentsore_kop,Helbideak,SentsoreenMota,emaitzak);
         sleep(1);
     }
         close(socket);
+        free(emaitzak);
+        free(Helbideak);
+        free(SentsoreenMota);
+}
 
+void Helbideak_irakurri( unsigned char **Helbideak,int **SentsoreenMota ,int *sentsore_kop){
+
+    const char *fitx_izena = "/etc/Sentsoreen_irakurketa/Sentsore_helbideak.txt";
+
+    FILE *file = fopen(fitx_izena, "r");
+    if (file == NULL) {
+        perror("Arazoa fitxategia irekitzen");
+        exit(1);
+    }
+ 
+    unsigned char buffer[1024];
+    
+    //Bigarren filan beti egongo da konektatutako sentsoreenkopurua
+    fgets(buffer, sizeof(buffer), file);
+    fgets(buffer, sizeof(buffer), file);
+    *sentsore_kop =  (int) buffer[0] -48 ;
+
+    if(*sentsore_kop < 1){
+	    perror("Ez daude sentsorerik konektatuak\n");
+	    exit(1);
+    }
+
+    //Konektatutako sentsore guztien helbideak.
+    *Helbideak = malloc(*sentsore_kop * sizeof(unsigned char) );
+
+    //Ea sentsoreak temperaturazkoak ala barometrikoak diren gordetzen duen array-a.
+    *SentsoreenMota = malloc(*sentsore_kop * sizeof(int) );
+
+    //irakurritako lineen kopurua 
+    int kont  = 0; 
+    while (fgets(buffer, sizeof(buffer), file) != NULL) {
+	    if(buffer[0] != '#')
+        {
+            *(*SentsoreenMota+kont) = buffer[0] - 48;	
+            //printf("SentsoreMota %i\n",SentsoreenMota[kont]);
+	        *(*Helbideak + kont) =  (int) strtol(buffer+2,NULL,0);
+	        kont++;
+	    } 
+    }
+
+    if(*sentsore_kop!=kont)
+    {
+        perror("Sentsorearen fitxategia gaizki idatzita dago");
+	    exit (1);
+    }
+
+    fclose(file);
 }
 
 //Barometroaren balioak irakurtzen ditu emaitzak array-ean gordez.
@@ -75,23 +123,21 @@ void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
 
 }
 
-//Konektatutako sentsoreen arabera irakurketak egin etagordetzen ditu enaitzetan
-void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak)
+void Irakurri_Sentsore_Guztiak(int sentskop,unsigned char *Helbideak,int *SentsoreenMota,struct balioak_barometro * emaitzak)
 {
-    for(int i =0; i<SENTSOREKOP; i++ )
+    for(int i =0; i<sentskop; i++ )
     {
         if(SentsoreenMota[i]==TEMP)
         {
-           // printf("sents numb %i\n", i);
+            //printf("sents numb %i\n", i);
             Temp_Irakurri(Helbideak[i],emaitzak+i);
-         //   printf("\n");
+           // printf("\n");
         }
         else if(SentsoreenMota[i]==BAR)
         {
-           // printf("sents numb %i\n", i);
-            //printf("helb 0x%02X\n", Helbideak[i]);
+            //printf("sents numb %i\n", i);
             Baro_Irakurri(Helbideak[i],emaitzak+i);
-           // printf("\n");
+            //printf("\n");
         }
         else
         {
@@ -100,19 +146,23 @@ void Irakurri_Sentsore_Guztiak(struct balioak_barometro * emaitzak)
     }   
 }
 
-//irakukrritako datuak emaitzen datubasera bidaltzen ditu http mezu baten bidez.
-void Emaitzak_bidali(int socket,struct balioak_barometro * emaitzak)
+//irakukrritako datuak emaitzen datubasera bidaltzen ditu http mezu baten bidez.Sentsore guztien 
+//irakurketak http mezu berdinean bidaltzen dira trafikoa ahal den bezain beste murrizteko.
+void Emaitzak_bidali(int socket,int sentskop, unsigned char *Helbideak,int *SentsoreenMota,struct balioak_barometro * emaitzak)
 {
     char payload[2048]="";
- // Prepare the payload (line protocol format)
-    for(int i=0;i<SENTSOREKOP;i++)
+    for(int i=0;i<sentskop;i++)
     {
+        /*Influxd Mezuaen formatoan beharrezkoa da jartzea mezu mota:Temperatura ala Barometrikoa(temperatura eta presioa)
+        Location(Bidaltzen duen sentsorearen identifikadorea( kasu honetan Sentsoreen montaketa ordenaren araberazkoa da)
+        eta bukatzeko balioak datuaren izenarekin
+        */
         if(SentsoreenMota[i]==TEMP)
             snprintf(payload + strlen(payload), sizeof(payload), "Temperatura,location=Senstore_%i temp=%.2f\n", i, (emaitzak+i)->temperatura);
         else
             snprintf(payload + strlen(payload), sizeof(payload), "Barometrikoa,location=Senstore_%i temp=%.2f,pres=%.2f\n", i, (emaitzak+i)->temperatura, (emaitzak+i)->presioa);
     }
-    mandar_lectura(socket,payload);
+    Irakurketa_Bidali(socket,payload);
 
 
 }
