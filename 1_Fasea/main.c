@@ -63,7 +63,7 @@ void Helbideak_irakurri( unsigned char **Helbideak,int **SentsoreenMota ,int *se
     //Konektatutako sentsore guztien helbideak.
     *Helbideak = malloc(*sentsore_kop * sizeof(unsigned char) );
 
-    //Ea sentsoreak temperaturazkoak ala barometrikoak diren gordetzen duen array-a.
+    //Ea sentsoreak tenperaturazkoak ala barometrikoak diren gordetzen duen array-a.
     *SentsoreenMota = malloc(*sentsore_kop * sizeof(int) );
 
     //irakurritako lineen kopurua 
@@ -109,7 +109,7 @@ void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
     if(fitx<0)
         exit(1);
     //printf("fitx = %i",fitx);
-    emaitzak->temperatura =Irakurketa_Termometroa(fitx);
+    emaitzak->tenperatura =Irakurketa_Termometroa(fitx);
     close(fitx);
 
 }
@@ -145,16 +145,17 @@ void Emaitzak_erakutsi(int sentskop,unsigned char *Helbideak,int *SentsoreenMota
     {
         if(SentsoreenMota[i]==TEMP)
         {
-            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
+            printf("%i sentsorearen tenperatura: %0.2f Celcius\n",i,emaitzak[i].tenperatura);
         }
         else if(SentsoreenMota[i]==BAR)
         {
-            printf("Presioa: %0.2f Paskal\n",emaitzak[i].presioa);
-            printf("Tenperatura: %0.2f Celcius\n\n",emaitzak[i].temperatura);
+            printf("%i sentsorearen presioa: %0.2f Paskal\n",i,emaitzak[i].presioa);
+            printf("%i sentsorearen tenperatura: %0.2f Paskal\n",i,emaitzak[i].tenperatura);
         }
         else
         {
             printf("%i -garren setsoreren izaera definitu gabe dago\n",i);
         }
+        printf("/n")
     }
 }

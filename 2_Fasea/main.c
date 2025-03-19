@@ -71,7 +71,7 @@ void Helbideak_irakurri( unsigned char **Helbideak,int **SentsoreenMota ,int *se
     //Konektatutako sentsore guztien helbideak.
     *Helbideak = malloc(*sentsore_kop * sizeof(unsigned char) );
 
-    //Ea sentsoreak temperaturazkoak ala barometrikoak diren gordetzen duen array-a.
+    //Ea sentsoreak tenperaturazkoak ala barometrikoak diren gordetzen duen array-a.
     *SentsoreenMota = malloc(*sentsore_kop * sizeof(int) );
 
     //irakurritako lineen kopurua 
@@ -118,7 +118,7 @@ void Temp_Irakurri(unsigned char helb,struct balioak_barometro * emaitzak)
     if(fitx<0)
         exit(1);
    // printf("fitx = %i",fitx);
-    emaitzak->temperatura =Irakurketa_Termometroa(fitx);
+    emaitzak->tenperatura =Irakurketa_Termometroa(fitx);
     close(fitx);
 
 }
@@ -153,14 +153,14 @@ void Emaitzak_bidali(int socket,int sentskop, unsigned char *Helbideak,int *Sent
     char payload[2048]="";
     for(int i=0;i<sentskop;i++)
     {
-        /*Influxd Mezuaen formatoan beharrezkoa da jartzea mezu mota:Temperatura ala Barometrikoa(temperatura eta presioa)
+        /*Influxd Mezuaen formatoan beharrezkoa da jartzea mezu mota:tenperatura ala Barometrikoa(tenperatura eta presioa)
         Location(Bidaltzen duen sentsorearen identifikadorea( kasu honetan Sentsoreen montaketa ordenaren araberazkoa da)
         eta bukatzeko balioak datuaren izenarekin
         */
         if(SentsoreenMota[i]==TEMP)
-            snprintf(payload + strlen(payload), sizeof(payload), "Temperatura,location=Senstore_%i temp=%.2f\n", i, (emaitzak+i)->temperatura);
+            snprintf(payload + strlen(payload), sizeof(payload), "tenperatura,location=Senstore_%i temp=%.2f\n", i, (emaitzak+i)->tenperatura);
         else
-            snprintf(payload + strlen(payload), sizeof(payload), "Barometrikoa,location=Senstore_%i temp=%.2f,pres=%.2f\n", i, (emaitzak+i)->temperatura, (emaitzak+i)->presioa);
+            snprintf(payload + strlen(payload), sizeof(payload), "Barometrikoa,location=Senstore_%i temp=%.2f,pres=%.2f\n", i, (emaitzak+i)->tenperatura, (emaitzak+i)->presioa);
     }
     Irakurketa_Bidali(socket,payload);
 

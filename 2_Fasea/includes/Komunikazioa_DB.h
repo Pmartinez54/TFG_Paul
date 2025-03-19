@@ -2,7 +2,7 @@
 #define SERVER_PORT 2083          // InfluxD datu basearen portu zenbakia.
 #define ORG "ehu"              // InfluxD datu basearen organizazioa.
 #define BUCKET "ehu"        // InfluxD datu basearen buzoia.
-#define TOKEN "ZS9-oE4yU2rOdkiMTs8Jt9_CT5L5BHoI-0RuhEf4nLh5uteNRQ4oSzXGRGIkCwwi1cqQ1PmjpejyjXiW3xtDuw==" //InfluxD datu basearen baimen token-a.
+#define TOKEN "lbrjv0oGzRa1HWeB2U7NdqDnWVqOz7gm4-DmTqjQAvzzve8MfZiuuBJqtLwo0Kimm5qactllM-MUSxtzNvtbNw==" //InfluxD datu basearen baimen token-a.
 
 
 int  Zerbitzarira_Konektatu();

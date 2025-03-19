@@ -1,6 +1,8 @@
 {
     "files.associations": {
         "barometro_irakurketa.h": "c",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "unistd.h": "c",
+        "mpl3115a2.h": "c"
     }
 }

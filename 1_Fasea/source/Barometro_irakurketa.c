@@ -10,11 +10,11 @@
 
 
 
-//Emmaitzak aldagaian bueltatzen dira sentsoraren presio eta temperatura irakurketak
+//Emmaitzak aldagaian bueltatzen dira sentsoraren presio eta tenperatura irakurketak
 void Irakurketa_Barometrikoa(int fitx, struct balioak_barometro * Emaitzak)    
 {   
     Emaitzak->presioa = MPL3115A2_ReadPressure(fitx);
-    Emaitzak->temperatura= MPL3115A2_ReadTemperature(fitx);
+    Emaitzak->tenperatura= MPL3115A2_ReadTemperature(fitx);
 }
 
 /*
