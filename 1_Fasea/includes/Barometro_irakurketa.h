@@ -2,7 +2,7 @@
 
 struct balioak_barometro
 {
-    float temperatura;
+    float tenperatura;
     float presioa;
 };
 

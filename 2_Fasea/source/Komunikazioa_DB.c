@@ -4,13 +4,16 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include "../includes/Komunikazioa_DB.h"
 #include "../includes/Barometro_irakurketa.h"
 
 void Mezua_Jaso(int socket);
 
 //InfulxDB zerbitzarira konektatzen da socketa-ren zenbakia bueltatuz.
-int Zerbitzarira_Konektatu()
+int Zerbitzarira_Konektatu(struct Komunikazio_info * ServerInf)
 {
     int sockfd;
     struct sockaddr_in server_addr;
@@ -25,27 +28,35 @@ int Zerbitzarira_Konektatu()
     // Zerbitzariaren helbidea konfiguratu.
     memset(&server_addr, 0, sizeof(server_addr));
     server_addr.sin_family = AF_INET;
-    server_addr.sin_port = htons(SERVER_PORT);
-    if (inet_pton(AF_INET, SERVER_IP, &server_addr.sin_addr) <= 0) {
+    server_addr.sin_port = htons(ServerInf->Server_port);
+    if (inet_pton(AF_INET, ServerInf->Server_ip, &server_addr.sin_addr) <= 0) {
+	printf("%s %i\n", ServerInf->Server_ip,ServerInf->Server_port);
         perror("Zerbitzariaren helbidea ez da zuzena");
         close(sockfd);
         exit(1);
     }
+
 
     // Zerbitzarira konektatu.
     if (connect(sockfd, (struct sockaddr *)&server_addr, sizeof(server_addr)) < 0) {
         perror("Errorea konektatzean");
         exit(1);
     }
-    return sockfd;
 
+    return sockfd;
 }
 
-void  Irakurketa_Bidali(int server_Socket,char *payload) {
-    char request[1024];
+void Irakurketa_Bidali(int server_Socket,char *payload,struct Komunikazio_info * ServerInf ) {
+    
+    char *request;
+    int maxMessageSize = 1028;
+
+    request = malloc(sizeof (char)*maxMessageSize);
+
+
 
     // Prestatu HTTP Mezua.
-    snprintf(request, sizeof(request),
+    snprintf(request, sizeof(char)*maxMessageSize,
              "POST /api/v2/write?org=%s&bucket=%s&precision=s HTTP/1.1\r\n"
              "Host: %s\r\n"
              "Authorization: Token %s\r\n"
@@ -53,15 +64,19 @@ void  Irakurketa_Bidali(int server_Socket,char *payload) {
              "Content-Length: %d\r\n"
              "\r\n"
              "%s",
-             ORG, BUCKET, SERVER_IP,TOKEN, strlen(payload), payload);
+             ServerInf->org, ServerInf->bucket, ServerInf->Server_ip,getenv("Token_Api"), strlen(payload), payload);
     
-    // printf("%s\n",request);
+    printf("%s\n",request);
+
     // Datuak bidali zerbitzarira HTTP mezu batean.
     if (send(server_Socket, request, strlen(request), 0) < 0) {
         perror("Send failed");
         close(server_Socket);
         exit(EXIT_FAILURE);
     }
+
+    Mezua_Jaso(server_Socket);
+    free(request); 
 
 }
 

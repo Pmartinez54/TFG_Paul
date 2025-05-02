@@ -150,12 +150,12 @@ void Emaitzak_erakutsi(int sentskop,unsigned char *Helbideak,int *SentsoreenMota
         else if(SentsoreenMota[i]==BAR)
         {
             printf("%i sentsorearen presioa: %0.2f Paskal\n",i,emaitzak[i].presioa);
-            printf("%i sentsorearen tenperatura: %0.2f Paskal\n",i,emaitzak[i].tenperatura);
+            printf("%i sentsorearen tenperatura: %0.2f Celcius\n",i,emaitzak[i].tenperatura);
         }
         else
         {
             printf("%i -garren setsoreren izaera definitu gabe dago\n",i);
         }
-        printf("/n")
+        printf("\n");
     }
 }
